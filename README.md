@@ -1,141 +1,113 @@
-🩺 OlaDoc – Healthcare Appointment & Telemedicine Platform
+# 🩺 OlaDoc – Healthcare Appointment & Telemedicine Platform
 
 OlaDoc is a modern healthcare platform that connects patients with doctors for appointments, secure document sharing, chat, video consultations, and online payments.
-Built with Next.js, Prisma, MongoDB, and trusted external providers, OlaDoc enables a seamless and scalable telemedicine experience.
+Built with Next.js, Prisma, MongoDB, and trusted external providers, OlaDoc offers a seamless telemedicine experience.
 
-🚀 Features
-👤 For Patients
+## 🚀 Features
 
-Search doctors by specialty, location, or availability
+### For Patients
+- Search doctors by specialty, location, or availability
+- Book, cancel, and manage appointments
+- Securely upload medical documents
+- Real-time chat with doctors
+- Video consultations via provider SDK
+- Online payments
 
-Book, cancel, and manage appointments
+### For Doctors
+- Dashboard with full appointment calendar
+- Manage patient interactions
+- Access and download patient documents
+- Chat and video consultations
 
-Upload and store medical documents securely
+### For Admins
+- Manage users, doctors, and clinics
+- Verify doctors
+- System analytics and admin settings
 
-Real-time chat with doctors
+---
 
-Video consultations via provider SDK
+## 🧩 System Elements
 
-Online payments for consultations
+### Frontends
+- Patient Web App (Next.js)
+- Doctor Dashboard (Next.js)
+- Admin Panel (Next.js)
 
-🩺 For Doctors
+### Backends
+- Core API (Next.js API Routes / Server Actions)
+- Background workers (notifications, reminders)
 
-Personal dashboard with full appointment calendar
+### Data & Storage
+- MongoDB + Prisma ORM
+- External cloud storage for files
+- Optional Redis
 
-Manage patient interactions
+### External Providers
+- Authentication provider (OAuth/OIDC)
+- Video call provider (WebRTC SDK)
+- Payment provider
+- Email/SMS provider
 
-View and download patient documents
+---
 
-Accept video or chat consultations
+## 🏗 Architectural Patterns Applied
 
-🛠️ For Admins
+- Modular Monolith inside Next.js for simplicity and maintainability
+- Event-driven async patterns for reminders, notifications, and payment webhooks
+- Real-time communication (via provider SDK) for chat & presence
+- Externalized services for auth, video calls, and payments
+- Edge-layer middleware (Vercel) for rate limiting and token validation
 
-Manage users, doctors, clinics
+---
 
-Verify medical professionals
+## 🔌 Communication Between Components
 
-View system analytics
+| From                       | To                    | Method                               |
+|----------------------------|------------------------|----------------------------------------|
+| Frontend → Core API        | Core API               | HTTPS (REST)                           |
+| Core API → Database        | MongoDB (Prisma ORM)   | TCP (via Prisma client)                |
+| Frontend → Auth Provider   | Auth Provider          | OAuth / OIDC                           |
+| Frontend ↔ Video Provider  | Video Provider         | WebRTC + Provider SDK                  |
+| Frontend → Payment Provider| Payment Provider       | Checkout Redirect / Payment Widget     |
+| Payment Provider → API     | Core API               | Webhooks (Payment success/failure)     |
+| API → Email/SMS Provider   | Email/SMS Provider     | HTTPS                                   |
+| API → Workers              | Background Workers     | Internal Async Queue / Event Trigger    |
 
-Admin-level configuration access
 
-🧩 System Elements
-Frontends
+---
 
-Patient Web App (Next.js)
+## 🔐 Authentication & Authorization
 
-Doctor Dashboard (Next.js)
+### Authentication (AuthN)
+Handled entirely by the external authentication provider:
+- User login & identity
+- Token issuance
+- Session management
+The API trusts validated tokens.
 
-Admin Panel (Next.js)
+### Authorization (AuthZ)
+Role-based permissions inside the API.
 
-Backends
+**Roles**
+- PATIENT
+- DOCTOR
+- ADMIN
 
-Core API (Next.js API Routes / Server Actions)
+**Controls**
+- appointments
+- medical documents
+- dashboards
+- prescriptions
+- payments
+- admin features
 
-Background workers (notifications, reminders)
+---
 
-Data & Storage
+## 🗄 Tech Stack
 
-MongoDB + Prisma ORM
-
-External cloud storage for document files
-
-Optional Redis (caching, rate limiting)
-
-External Providers
-
-Authentication provider (OAuth/OIDC)
-
-Video call provider (WebRTC SDK)
-
-Payment provider (Stripe/PayPal/etc.)
-
-Email/SMS notifications provider
-
-🏗️ Architectural Patterns Applied
-
-Modular Monolith inside Next.js for simplicity and maintainability
-
-Event-driven async patterns for reminders, notifications, and payment webhooks
-
-Real-time communication (via provider SDK) for chat & presence
-
-Externalized services for auth, video calls, and payments
-
-Edge-layer middleware (Vercel) for rate limiting and token validation
-
-🔌 Communication Between Components
-From	To	Method
-Frontend → Core API	HTTPS (REST)	
-API → Database	Prisma (TCP)	
-Frontend → Auth Provider	OAuth / OIDC	
-Frontend ↔ Video Provider	WebRTC + provider SDK	
-Frontend → Payment Provider	Checkout redirect / payment widget	
-Payment Provider → API	Webhooks (payment succeeded/failed)	
-API → Email/SMS Provider	HTTPS	
-API → Workers	Internal async queue	
-🔐 Authentication & Authorization
-Authentication (AuthN)
-
-Handled entirely by an external authentication provider:
-
-User login & identity
-
-Token issuance
-
-Session management
-
-The API trusts validated tokens from the provider.
-
-Authorization (AuthZ)
-
-Role-based permissions enforced inside the API.
-
-Roles:
-
-PATIENT
-
-DOCTOR
-
-ADMIN
-
-Used to control access to:
-
-Appointments
-
-Medical documents
-
-Dashboards
-
-Prescriptions
-
-Payments
-
-Admin management features
-
-🗄️ Tech Stack
-
-Frontend: Next.js 14, React, TailwindCSS
-Backend: Next.js API Routes / Server Actions
-Database: MongoDB + Prisma ORM
-Integrations: Auth Provider, Video Provider, Payment Provider, Email/SMS Provider
-Deployment: Vercel + GitHub CI/CD
+- Next.js 14
+- React + TailwindCSS
+- Prisma ORM
+- MongoDB
+- External Auth / Video / Payment / Email services
+- Vercel Deployment + GitHub CI/CD
