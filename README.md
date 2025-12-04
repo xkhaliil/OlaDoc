@@ -1,7 +1,44 @@
-# OlaDoc
-A comprehensive web application that connects patients with doctors for easy appointment booking, secure document exchange, and real-time video consultations.
+🩺 OlaDoc – Healthcare Appointment & Telemedicine Platform
 
-1. Elements of the Project
+OlaDoc is a modern healthcare platform that connects patients with doctors for appointments, secure document sharing, chat, video consultations, and online payments.
+Built with Next.js, Prisma, MongoDB, and trusted external providers, OlaDoc enables a seamless and scalable telemedicine experience.
+
+🚀 Features
+👤 For Patients
+
+Search doctors by specialty, location, or availability
+
+Book, cancel, and manage appointments
+
+Upload and store medical documents securely
+
+Real-time chat with doctors
+
+Video consultations via provider SDK
+
+Online payments for consultations
+
+🩺 For Doctors
+
+Personal dashboard with full appointment calendar
+
+Manage patient interactions
+
+View and download patient documents
+
+Accept video or chat consultations
+
+🛠️ For Admins
+
+Manage users, doctors, clinics
+
+Verify medical professionals
+
+View system analytics
+
+Admin-level configuration access
+
+🧩 System Elements
 Frontends
 
 Patient Web App (Next.js)
@@ -18,22 +55,23 @@ Background workers (notifications, reminders)
 
 Data & Storage
 
-MongoDB via Prisma (users, appointments, payments, documents, messages)
+MongoDB + Prisma ORM
 
-Cloud storage provider (patient files)
+External cloud storage for document files
 
-Optional Redis (cache + rate limiting)
+Optional Redis (caching, rate limiting)
 
 External Providers
 
-Authentication provider
+Authentication provider (OAuth/OIDC)
 
-Video call provider
+Video call provider (WebRTC SDK)
 
-Payment provider (Stripe / PayPal / similar)
+Payment provider (Stripe/PayPal/etc.)
 
-Email/SMS provider
-2. Architectural Patterns Applied
+Email/SMS notifications provider
+
+🏗️ Architectural Patterns Applied
 
 Modular Monolith inside Next.js for simplicity and maintainability
 
@@ -45,7 +83,7 @@ Externalized services for auth, video calls, and payments
 
 Edge-layer middleware (Vercel) for rate limiting and token validation
 
-3. Communication Between Components
+🔌 Communication Between Components
 From	To	Method
 Frontend → Core API	HTTPS (REST)	
 API → Database	Prisma (TCP)	
@@ -55,10 +93,10 @@ Frontend → Payment Provider	Checkout redirect / payment widget
 Payment Provider → API	Webhooks (payment succeeded/failed)	
 API → Email/SMS Provider	HTTPS	
 API → Workers	Internal async queue	
-4. Authentication & Authorization Needed
+🔐 Authentication & Authorization
 Authentication (AuthN)
 
-Handled entirely by the external authentication provider:
+Handled entirely by an external authentication provider:
 
 User login & identity
 
@@ -66,11 +104,11 @@ Token issuance
 
 Session management
 
-API trusts validated tokens from the provider.
+The API trusts validated tokens from the provider.
 
 Authorization (AuthZ)
 
-Role-based permissions inside the Core API:
+Role-based permissions enforced inside the API.
 
 Roles:
 
@@ -82,14 +120,22 @@ ADMIN
 
 Used to control access to:
 
-appointments
+Appointments
 
-medical documents
+Medical documents
 
-dashboards
+Dashboards
 
-prescriptions
+Prescriptions
 
-payments
+Payments
 
-admin management features
+Admin management features
+
+🗄️ Tech Stack
+
+Frontend: Next.js 14, React, TailwindCSS
+Backend: Next.js API Routes / Server Actions
+Database: MongoDB + Prisma ORM
+Integrations: Auth Provider, Video Provider, Payment Provider, Email/SMS Provider
+Deployment: Vercel + GitHub CI/CD
