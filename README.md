@@ -3,7 +3,70 @@
 OlaDoc is a modern healthcare platform that connects patients with doctors for appointments, secure document sharing, chat, video consultations, and online payments.
 Built with Next.js, Prisma, MongoDB, and trusted external providers, OlaDoc offers a seamless telemedicine experience.
 
-## 🗺️ System Architecture (MVP)
+## 🧪 MVP Architecture (Minimum Viable Product)
+
+### MVP Goal
+The MVP focuses strictly on validating the core value proposition of OlaDoc:
+patients can search for doctors, book appointments, and doctors can manage their availability.
+
+Advanced features are intentionally excluded to reduce complexity and validate real user demand.
+
+### MVP Scope
+
+**Included**
+- Patient, Doctor, Admin access
+- Authentication and role-based access
+- Appointment booking
+- Doctor availability management
+- Central database
+
+**Excluded**
+- Payments
+- Video consultations
+- Chat
+- Notifications
+- File uploads
+- Background workers
+
+### MVP Architecture Diagram
+
+```mermaid
+flowchart LR
+
+subgraph USERS["Users"]
+  PAT[Patient]
+  DOC[Doctor]
+  ADM[Admin]
+end
+
+subgraph FRONTEND["Frontend"]
+  WEB[Web App - Next.js]
+end
+
+subgraph BACKEND["Backend"]
+  API[Core API]
+  AUTH[Auth Module]
+  APPT[Appointment Module]
+end
+
+DB[(MongoDB)]
+
+PAT --> WEB
+DOC --> WEB
+ADM --> WEB
+
+WEB --> API
+API --> AUTH
+API --> APPT
+
+AUTH --> DB
+APPT --> DB
+---
+
+
+Change:
+```
+## 🗺️ System Architecture — Phase I (Production Release)
 
 ```mermaid
 flowchart LR
@@ -156,6 +219,31 @@ subgraph LEGEND["Legend"]
     L7[Arrows show REST OAuth WebRTC Webhooks]
 end
 ```
+## 📈 Phase II — Scalability & Optimization
+
+### Phase II Goal
+Phase II focuses on improving scalability, performance, and reliability
+once the platform experiences real user growth.
+
+### Planned Changes
+- Split modular monolith into independent microservices
+- Introduce Redis caching for appointment availability
+- Add message broker (RabbitMQ / Kafka)
+- Implement rate limiting and API throttling
+- Improve audit logging and regulatory compliance
+- Enable horizontal scaling and multi-region deployment
+
+### Implementation Order Strategy
+Implementation order is decided based on:
+- User behavior and feature adoption
+- System performance bottlenecks
+- Operational cost versus delivered value
+
+Examples:
+- High booking traffic → caching first
+- Notification delays → async queues
+- Video load issues → dedicated media services
+
 
 ## 🚀 Features
 
@@ -265,3 +353,21 @@ Role-based permissions inside the API.
 - MongoDB
 - External Auth / Video / Payment / Email services
 - Vercel Deployment + GitHub CI/CD
+
+## 🔮 Future Phases & Roadmap
+
+The following features are postponed until clear user demand
+or business justification exists.
+
+### Potential Enhancements
+- Mobile applications (iOS / Android)
+- AI-based doctor recommendations
+- Appointment no-show prediction
+- Advanced analytics dashboards
+- Insurance and billing integration
+- Electronic prescriptions
+- Multi-country deployment
+
+These features will be implemented only when
+their business value justifies the added complexity.
+
