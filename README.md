@@ -61,10 +61,6 @@ API --> APPT
 
 AUTH --> DB
 APPT --> DB
----
-
-
-Change:
 ```
 ## 🗺️ System Architecture — Phase I (Production Release)
 
