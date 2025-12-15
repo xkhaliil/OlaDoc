@@ -215,6 +215,60 @@ subgraph LEGEND["Legend"]
     L7[Arrows show REST OAuth WebRTC Webhooks]
 end
 ```
+## 👥 Team Structure & Work Breakdown
+
+### 🧪 MVP Phase
+
+**How many teams?**  
+2 teams
+
+**How many developers per team?**  
+- Frontend & Product Team: 2 developers  
+- Backend & Data Team: 3 developers  
+
+**What areas would each team be responsible for?**
+
+**Frontend & Product Team**
+- Patient Web App
+- Doctor Dashboard
+- Admin basic views
+- Authentication flows (frontend)
+- Booking and availability UI
+- API integration
+
+**Backend & Data Team**
+- Core API
+- Authentication and role validation
+- Appointment booking logic
+- Doctor availability management
+- Database schema (MongoDB + Prisma)
+- Authorization rules (PATIENT / DOCTOR / ADMIN)
+
+---
+
+**How would the team structure change?**  
+Teams become specialized to support scalability and production reliability.
+
+**How many teams?**  
+4 teams
+
+**Total developers:**  
+10–12 developers
+
+**Team responsibilities**
+
+- **Frontend Team (3 devs):**  
+  Patient app, doctor dashboard, admin panel, UX and performance
+
+- **Core Backend Team (3–4 devs):**  
+  API gateway, accounts, appointments, authorization
+
+- **Real-Time & Media Team (2 devs):**  
+  Chat, video consultations, WebRTC integrations
+
+- **Platform & DevOps Team (2–3 devs):**  
+  CI/CD, monitoring, scaling, queues, security
+
 ## 📈 Phase II — Scalability & Optimization
 
 ### Phase II Goal
@@ -349,6 +403,7 @@ Role-based permissions inside the API.
 - MongoDB
 - External Auth / Video / Payment / Email services
 - Vercel Deployment + GitHub CI/CD
+
 
 ## 🔮 Future Phases & Roadmap
 
