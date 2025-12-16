@@ -1,424 +1,386 @@
-# 🩺 OlaDoc – Healthcare Appointment & Telemedicine Platform
+# 🩺 E-Healthcare Appointment & Telemedicine Platform
 
-OlaDoc is a modern healthcare platform that connects patients with doctors for appointments, secure document sharing, chat, video consultations, and online payments.
-Built with Next.js, Prisma, MongoDB, and trusted external providers, OlaDoc offers a seamless telemedicine experience.
+This project is a distributed e-healthcare system designed to manage appointments, schedules, consultations, communication, and administrative operations between patients, healthcare providers, and healthcare centers.
 
-## 🧪 MVP Architecture (Minimum Viable Product)
-
-### MVP Goal
-The MVP focuses strictly on validating the core value proposition of OlaDoc:
-patients can search for doctors, book appointments, and doctors can manage their availability.
-
-Advanced features are intentionally excluded to reduce complexity and validate real user demand.
-
-### MVP Scope
-
-**Included**
-- Patient, Doctor, Admin access
-- Authentication and role-based access
-- Appointment booking
-- Doctor availability management
-- Central database
-
-**Excluded**
-- Payments
-- Video consultations
-- Chat
-- Notifications
-- File uploads
-- Background workers
-
-### MVP Architecture Diagram
-
-```mermaid
-flowchart LR
-
-subgraph USERS["Users"]
-  PAT[Patient]
-  DOC[Doctor]
-  ADM[Admin]
-end
-
-subgraph FRONTEND["Frontend"]
-  WEB[Web App - Next.js]
-end
-
-subgraph BACKEND["Backend"]
-  API[Core API]
-  AUTH[Auth Module]
-  APPT[Appointment Module]
-end
-
-DB[(MongoDB)]
-
-PAT --> WEB
-DOC --> WEB
-ADM --> WEB
-
-WEB --> API
-API --> AUTH
-API --> APPT
-
-AUTH --> DB
-APPT --> DB
-```
-## 🗺️ System Architecture — Phase I (Production Release)
-
-```mermaid
-flowchart LR
-
-%% ============================
-%%         USERS
-%% ============================
-subgraph USERS["Users"]
-    direction TB
-    PAT[Patient]:::user
-    DOC[Doctor]:::user
-    ADM[Admin]:::user
-end
-
-%% ============================
-%%         FRONTENDS
-%% ============================
-subgraph FRONTENDS["Frontend"]
-    direction TB
-    FE_PAT[Patient App - Nextjs]:::frontend
-    FE_DOC[Doctor Dashboard - Nextjs]:::frontend
-    FE_ADM[Admin Panel - Nextjs]:::frontend
-end
-
-%% ============================
-%%      EXTERNAL PROVIDERS
-%% ============================
-subgraph EXTERNAL["Providers"]
-    direction TB
-    AUTHP[Auth Provider - OAuth OIDC]:::external
-    VIDEOP[Video Provider - WebRTC SDK]:::external
-    PAYP[Payment Provider - Checkout Webhooks]:::external
-    EMAILP[Email SMS Provider]:::external
-    FILEP[File Storage Provider]:::external
-end
-
-%% ============================
-%%      INTERNAL SYSTEM
-%% ============================
-subgraph INTERNAL["System"]
-    direction LR
-
-    APIGW[API Gateway - REST API ]:::gateway
-
-    %% SERVICES
-    ACC_SVC[Accounts Service]:::service
-    APPT_SVC[Appointments Service]:::service
-    DOCS_SVC[Documents Service]:::service
-    CHAT_SVC[Chat Service]:::service
-    VIDEO_SVC[Video Chat Service]:::service
-    PAY_SVC[Payment Service]:::service
-
-    %% DATABASES
-    DB_MAIN[(MongoDB)]:::database
-    DB_DOCS[(Documents Index DB - UploadThing)]:::database
-    DB_CHAT[(Chat Messages DB - Firebase)]:::database
-
-    %% QUEUE + WORKERS
-    QUEUE{{Event Queue}}:::queue
-    WORKERS[Background Workers - Reminders Notifications]:::service
-end
-
-%% ============================
-%%         USER FLOWS
-%% ============================
-PAT -->|HTTPS| FE_PAT
-DOC -->|HTTPS| FE_DOC
-ADM -->|HTTPS| FE_ADM
-
-FE_PAT -->|REST| APIGW
-FE_DOC -->|REST| APIGW
-FE_ADM -->|REST| APIGW
-
-%% ============================
-%%     AUTHENTICATION
-%% ============================
-FE_PAT -->|OAuth Login| AUTHP
-FE_DOC -->|OAuth Login| AUTHP
-FE_ADM -->|OAuth Login| AUTHP
-APIGW -->|Token Validation| AUTHP
-
-%% ============================
-%%      VIDEO CALL FLOWS
-%% ============================
-FE_PAT <--> |WebRTC| VIDEOP
-FE_DOC <--> |WebRTC| VIDEOP
-
-%% ============================
-%%      PAYMENT FLOWS
-%% ============================
-FE_PAT -->|Checkout| PAYP
-PAYP -->|Webhook| APIGW
-
-%% ============================
-%%   API TO INTERNAL SERVICES
-%% ============================
-APIGW --> ACC_SVC
-APIGW --> APPT_SVC
-APIGW --> DOCS_SVC
-APIGW --> CHAT_SVC
-APIGW --> VIDEO_SVC
-APIGW --> PAY_SVC
-
-%% ============================
-%%     DATABASE CONNECTIONS
-%% ============================
-ACC_SVC --> DB_MAIN
-APPT_SVC --> DB_MAIN
-DOCS_SVC --> DB_DOCS
-CHAT_SVC --> DB_CHAT
-
-%% ============================
-%%     ASYNC EVENT FLOWS
-%% ============================
-APPT_SVC -->|Event| QUEUE
-PAY_SVC -->|Event| QUEUE
-DOCS_SVC -->|Event| QUEUE
-
-QUEUE --> WORKERS
-WORKERS -->|Email SMS| EMAILP
-
-%% ============================
-%%     FILE UPLOAD FLOWS
-%% ============================
-FE_PAT -->|Upload File| FILEP
-DOCS_SVC -->|Store File Metadata| DB_DOCS
-
-%% ============================
-%%        STYLE DEFINITIONS
-%% ============================
-classDef user fill:#ffe6e6,stroke:#cc0000,stroke-width:1px,color:#000;
-classDef frontend fill:#e6f2ff,stroke:#0073e6,stroke-width:1px,color:#000;
-classDef external fill:#fff2cc,stroke:#cc9900,stroke-width:1px,color:#000;
-classDef gateway fill:#e8e8e8,stroke:#666,stroke-width:1px,color:#000;
-classDef service fill:#eafbe7,stroke:#2d8a34,stroke-width:1px,color:#000;
-classDef database fill:#fde2e4,stroke:#c9184a,stroke-width:1px,color:#000;
-classDef queue fill:#f0e6ff,stroke:#7b2cbf,stroke-width:1px,color:#000;
-
-%% ============================
-%%        LEGEND
-%% ============================
-subgraph LEGEND["Legend"]
-    direction TB
-    L1[Red Oval = User]
-    L2[Blue Box = Frontend]
-    L3[Green Box = Internal Service]
-    L4[Yellow Box = External Provider]
-    L5[Pink Cylinder = Database]
-    L6[Purple Diamond = Event Queue]
-    L7[Arrows show REST OAuth WebRTC Webhooks]
-end
-```
-## 👥 Team Structure & Work Breakdown
-
-### 🧪 MVP Phase
-
-**How many teams?**  
-2 teams
-
-**How many developers per team?**  
-- Frontend & Product Team: 2 developers  
-- Backend & Data Team: 3 developers  
-
-**What areas would each team be responsible for?**
-
-**Frontend & Product Team**
-- Patient Web App
-- Doctor Dashboard
-- Admin basic views
-- Authentication flows (frontend)
-- Booking and availability UI
-- API integration
-
-**Backend & Data Team**
-- Core API
-- Authentication and role validation
-- Appointment booking logic
-- Doctor availability management
-- Database schema (MongoDB + Prisma)
-- Authorization rules (PATIENT / DOCTOR / ADMIN)
+The system is built using a **microservices architecture** and supports **multiple frontends (web, mobile, desktop)** communicating through well-defined APIs, following the principles taught in **FE405 – Designing Apps and APIs**.
 
 ---
 
-**How would the team structure change?**  
-Teams become specialized to support scalability and production reliability.
+## 1️⃣ Project Elements
 
-**How many teams?**  
-4 teams
+### Users
+- **Patient**
+  - Book and manage appointments
+  - Access medical records and documents
+  - Communicate with healthcare providers
+  - Receive notifications
+  - Participate in virtual consultations
+  - Submit reviews
+  - Manage personal account
 
-**Total developers:**  
-10–12 developers
+- **Healthcare Provider**
+  - Manage availability and schedules
+  - Confirm or reject appointments
+  - Conduct consultations
+  - Access patient history
+  - Communicate with patients
 
-**Team responsibilities**
+- **Healthcare Center**
+  - Manage multiple healthcare providers
+  - Coordinate schedules and appointments
+  - Invite providers to join the center
+  - Manage center-wide operations
+  - View aggregated statistics
 
-- **Frontend Team (3 devs):**  
-  Patient app, doctor dashboard, admin panel, UX and performance
-
-- **Core Backend Team (3–4 devs):**  
-  API gateway, accounts, appointments, authorization
-
-- **Real-Time & Media Team (2 devs):**  
-  Chat, video consultations, WebRTC integrations
-
-- **Platform & DevOps Team (2–3 devs):**  
-  CI/CD, monitoring, scaling, queues, security
-
-## 📈 Phase II — Scalability & Optimization
-
-### Phase II Goal
-Phase II focuses on improving scalability, performance, and reliability
-once the platform experiences real user growth.
-
-### Planned Changes
-- Split modular monolith into independent microservices
-- Introduce Redis caching for appointment availability
-- Add message broker (RabbitMQ / Kafka)
-- Implement rate limiting and API throttling
-- Improve audit logging and regulatory compliance
-- Enable horizontal scaling and multi-region deployment
-
-### Implementation Order Strategy
-Implementation order is decided based on:
-- User behavior and feature adoption
-- System performance bottlenecks
-- Operational cost versus delivered value
-
-Examples:
-- High booking traffic → caching first
-- Notification delays → async queues
-- Video load issues → dedicated media services
-
-
-## 🚀 Features
-
-### For Patients
-- Search doctors by specialty, location, or availability
-- Book, cancel, and manage appointments
-- Securely upload medical documents
-- Real-time chat with doctors
-- Video consultations via provider SDK
-- Online payments
-
-### For Doctors
-- Dashboard with full appointment calendar
-- Manage patient interactions
-- Access and download patient documents
-- Chat and video consultations
-
-### For Admins
-- Manage users, doctors, and clinics
-- Verify doctors
-- System analytics and admin settings
+- **Administrator**
+  - Manage user accounts and roles
+  - Moderate reviews
+  - Access system-wide analytics
 
 ---
 
-## 🧩 System Elements
+## Frontend Applications
 
-### Frontends
-- Patient Web App (Next.js)
-- Doctor Dashboard (Next.js)
-- Admin Panel (Next.js)
+- 📱 Patient Mobile Application  
+- 🌐 Patient Web Application  
+- 🌐 Healthcare Provider Web Application  
+- 🖥️ Healthcare Center Desktop Application  
+- 🌐 Admin Dashboard  
 
-### Backends
-- Core API (Next.js API Routes / Server Actions)
-- Background workers (notifications, reminders)
-
-### Data & Storage
-- MongoDB + Prisma ORM
-- External cloud storage for files
-- Optional Redis
-
-### External Providers
-- Authentication provider (OAuth/OIDC)
-- Video call provider (WebRTC SDK)
-- Payment provider
-- Email/SMS provider
+All frontends are client-facing applications and interact with the system exclusively through APIs.
 
 ---
 
-## 🏗 Architectural Patterns Applied
+## Backend Microservices
 
-- Modular Monolith inside Next.js for simplicity and maintainability
-- Event-driven async patterns for reminders, notifications, and payment webhooks
-- Real-time communication (via provider SDK) for chat & presence
-- Externalized services for auth, video calls, and payments
-- Edge-layer middleware (Vercel) for rate limiting and token validation
+- API Gateway  
+- Auth Service  
+- Appointment Service  
+- Schedule Service  
+- Patient Service  
+- Consultation Service  
+- Document Service  
+- Communication Service  
+- Notification Service  
+- Review & Rating Service  
+- Stats & Analytics Service  
 
----
-
-## 🔌 Communication Between Components
-
-| From                       | To                    | Method                               |
-|----------------------------|------------------------|----------------------------------------|
-| Frontend → Core API        | Core API               | HTTPS (REST)                           |
-| Core API → Database        | MongoDB (Prisma ORM)   | TCP (via Prisma client)                |
-| Frontend → Auth Provider   | Auth Provider          | OAuth / OIDC                           |
-| Frontend ↔ Video Provider  | Video Provider         | WebRTC + Provider SDK                  |
-| Frontend → Payment Provider| Payment Provider       | Checkout Redirect / Payment Widget     |
-| Payment Provider → API     | Core API               | Webhooks (Payment success/failure)     |
-| API → Email/SMS Provider   | Email/SMS Provider     | HTTPS                                   |
-| API → Workers              | Background Workers     | Internal Async Queue / Event Trigger    |
-
+Each service is independently deployable and owns its own data.
 
 ---
 
-## 🔐 Authentication & Authorization
+## Data Stores
+
+- Relational databases (users, appointments, schedules, consultations)
+- Object storage (medical documents)
+- Key-value store (cache, sessions)
+
+---
+
+## 2️⃣ Architectural Patterns Applied
+
+- Microservices Architecture
+- API-First Design
+- Database per Service
+- Event-Driven Architecture (partial)
+- Stateless Services for Horizontal Scaling
+
+---
+
+## 3️⃣ Communication Between Components
+
+- **Synchronous**: REST over HTTPS
+- **Asynchronous**: Events / message queues
+- **Real-time (Phase I+)**: WebSockets, WebRTC
+
+---
+
+## 4️⃣ Authentication & Authorization
 
 ### Authentication (AuthN)
-Handled entirely by the external authentication provider:
-- User login & identity
-- Token issuance
-- Session management
-The API trusts validated tokens.
+- OAuth2 / OpenID Connect
+- JWT tokens
+- Central Auth Service
+- Token validation at API Gateway
 
 ### Authorization (AuthZ)
-Role-based permissions inside the API.
+- Role-Based Access Control (RBAC)
+- Ownership checks enforced by backend services
 
-**Roles**
-- PATIENT
-- DOCTOR
-- ADMIN
-
-**Controls**
-- appointments
-- medical documents
-- dashboards
-- prescriptions
-- payments
-- admin features
+Roles:
+- Patient
+- Healthcare Provider
+- Healthcare Center Admin
+- Platform Administrator
 
 ---
 
-## 🗄 Tech Stack
+## 5️⃣ Scalability & Reliability
 
-- Next.js 14
-- React + TailwindCSS
-- Prisma ORM
-- MongoDB
-- External Auth / Video / Payment / Email services
-- Vercel Deployment + GitHub CI/CD
+- Stateless microservices
+- Horizontal scaling behind load balancers
+- Independent scaling per service
+- Retry, timeout, and idempotency patterns
 
+---
 
-## 🔮 Future Phases & Roadmap
+## 6️⃣ Architectural Trade-Offs
 
-The following features are postponed until clear user demand
-or business justification exists.
+| Decision | Trade-Off |
+|--------|----------|
+| Microservices | Increased operational complexity |
+| Multiple frontends | Higher maintenance cost |
+| Database per service | Possible data duplication |
+| Async events | Eventual consistency |
 
-### Potential Enhancements
-- Mobile applications (iOS / Android)
-- AI-based doctor recommendations
-- Appointment no-show prediction
-- Advanced analytics dashboards
-- Insurance and billing integration
-- Electronic prescriptions
-- Multi-country deployment
+---
 
-These features will be implemented only when
-their business value justifies the added complexity.
+## 7️⃣ Summary
 
+This architecture aligns with FE405 principles by clearly defining system boundaries, using APIs as contracts, and designing for scalability, maintainability, and long-term evolution.
+
+---
+
+## 8️⃣ MVP Architecture Diagram (Assignment 2)
+
+The MVP validates the core value proposition:  
+**Patients can book appointments and providers can manage schedules.**
+
+### MVP Scope
+**Included**
+- Patient (Mobile & Web)
+- Healthcare Provider (Web)
+- API Gateway
+- Auth Service
+- Appointment Service
+- Schedule Service
+- Notification Service
+- Relational databases
+
+**Excluded**
+- Chat & video
+- Reviews
+- Analytics
+- Healthcare Center desktop app
+
+```mermaid
+flowchart LR
+subgraph USERS["Users - Public Internet"]
+    PAT_MOB["Patient Mobile App"]:::client
+    PAT_WEB["Patient Web App"]:::client
+    PRO_WEB["Provider Web App"]:::client
+end
+subgraph EDGE["Public Layer"]
+    APIGW["API Gateway"]:::gateway
+end
+subgraph INTERNAL["Internal Backend - Private Network"]
+    AUTH["Auth Service"]:::service
+    AUTH_DB[(Auth DB)]:::database
+    APPT["Appointment Service"]:::service
+    APPT_DB[(Appointment DB)]:::database
+    SCHED["Schedule Service"]:::service
+    SCHED_DB[(Schedule DB)]:::database
+    NOTIF["Notification Service"]:::async
+end
+PAT_MOB --> APIGW
+PAT_WEB --> APIGW
+PRO_WEB --> APIGW
+APIGW --> AUTH
+APIGW --> APPT
+APIGW --> SCHED
+APPT --> SCHED
+APPT --> NOTIF
+AUTH --> AUTH_DB
+APPT --> APPT_DB
+SCHED --> SCHED_DB
+classDef client fill:#E3F2FD,stroke:#1565C0,stroke-width:2px
+classDef gateway fill:#E8F5E9,stroke:#2E7D32,stroke-width:2px
+classDef service fill:#FFFDE7,stroke:#F9A825,stroke-width:2px
+classDef async fill:#F3E5F5,stroke:#6A1B9A,stroke-width:2px
+classDef database fill:#ECEFF1,stroke:#37474F,stroke-width:2px
+```
+## 9️⃣ Phase I – Releasable Product
+
+### Phase I Goal
+Make the product **usable, trustworthy, and production-ready** for real healthcare workflows.
+
+Phase I builds directly on the MVP and introduces only what is required for:
+- Real users
+- Operational stability
+- Secure healthcare usage
+
+---
+
+### ✅ Added in Phase I
+
+#### Functional Additions
+- Healthcare Center Desktop Application
+- Patient Service
+- Consultation Service
+- Medical Document Service
+- Communication Service (Chat)
+- Review & Rating Service
+- Admin Dashboard
+
+#### Technical Additions
+- Stats & Analytics Service
+- Stronger notification workflows
+- Expanded role-based authorization
+- Improved logging and monitoring
+- Object storage for medical documents
+
+---
+
+## 🏗️ Phase I Architecture Diagram
+
+```mermaid
+flowchart LR
+
+subgraph CLIENTS["Client Applications - Public Internet"]
+    PAT_MOB["Patient Mobile App"]:::client
+    PAT_WEB["Patient Web App"]:::client
+    PRO_WEB["Provider Web App"]:::client
+    CENTER_DESK["Healthcare Center Desktop App"]:::client
+    ADMIN_WEB["Admin Dashboard"]:::client
+end
+
+subgraph EDGE["Public Edge Layer"]
+    APIGW["API Gateway"]:::gateway
+end
+
+subgraph INTERNAL["Internal Backend - Private Network"]
+
+    AUTH["Auth Service"]:::service
+    AUTH_DB[(Auth DB)]:::database
+
+    APPT["Appointment Service"]:::service
+    APPT_DB[(Appointment DB)]:::database
+
+    SCHED["Schedule Service"]:::service
+    SCHED_DB[(Schedule DB)]:::database
+
+    PATIENT["Patient Service"]:::service
+    PATIENT_DB[(Patient DB)]:::database
+
+    CONSULT["Consultation Service"]:::service
+    CONSULT_DB[(Consultation DB)]:::database
+
+    DOCS["Document Service"]:::service
+    DOCS_STORE[(Medical Documents Storage)]:::database
+
+    CHAT["Communication Service"]:::service
+
+    NOTIF["Notification Service"]:::async
+    REVIEW["Review & Rating Service"]:::service
+    STATS["Stats & Analytics Service"]:::async
+end
+
+PAT_MOB --> APIGW
+PAT_WEB --> APIGW
+PRO_WEB --> APIGW
+CENTER_DESK --> APIGW
+ADMIN_WEB --> APIGW
+
+APIGW --> AUTH
+APIGW --> APPT
+APIGW --> SCHED
+APIGW --> PATIENT
+APIGW --> CONSULT
+APIGW --> DOCS
+APIGW --> CHAT
+APIGW --> REVIEW
+APIGW --> STATS
+
+APPT --> SCHED
+CONSULT --> PATIENT
+CONSULT --> DOCS
+
+APPT --> NOTIF
+APPT --> STATS
+REVIEW --> STATS
+
+AUTH --> AUTH_DB
+APPT --> APPT_DB
+SCHED --> SCHED_DB
+PATIENT --> PATIENT_DB
+CONSULT --> CONSULT_DB
+DOCS --> DOCS_STORE
+
+classDef client fill:#E3F2FD,stroke:#1565C0,stroke-width:2px
+classDef gateway fill:#E8F5E9,stroke:#2E7D32,stroke-width:2px
+classDef service fill:#FFFDE7,stroke:#F9A825,stroke-width:2px
+classDef async fill:#F3E5F5,stroke:#6A1B9A,stroke-width:2px
+classDef database fill:#ECEFF1,stroke:#37474F,stroke-width:2px
+```
+## 🔸 Phase II – Product Maturity
+
+### Phase II Goals
+The goal of Phase II is to evolve the system from a releasable product into a **mature, scalable, and optimized platform**.
+
+Key objectives include:
+- Enhancing user experience
+- Supporting higher traffic and usage
+- Improving reliability, performance, and observability
+- Preparing the system for advanced features
+
+---
+
+### Phase II Changes
+
+- **Video Consultations**
+  - WebRTC-based telemedicine
+  - Real-time audio and video communication
+
+- **Advanced Notification Channels**
+  - SMS and push notifications
+  - Multi-channel delivery strategies
+
+- **Compliance & Auditing**
+  - Audit logs for sensitive actions
+  - Traceability for healthcare operations
+
+- **Feature Flags**
+  - Gradual rollouts
+  - A/B testing of new features
+
+- **Performance Optimization**
+  - Caching strategies
+  - Query optimization
+  - Load-based scaling
+
+---
+
+### Decision Signals for Phase II
+
+Phase II features are implemented based on clear signals, such as:
+- Increasing demand for remote consultations
+- User feedback requesting richer interactions
+- Sustained growth in daily active users
+- Performance bottlenecks in Phase I
+- Business readiness for expanded services
+
+---
+
+## 🔮 Future Phases
+
+Beyond Phase II, additional features may be introduced once the system and organization are ready.
+
+### Potential Future Enhancements
+- AI-assisted appointment recommendations
+- Clinical decision support tools
+- Integration with external systems (labs, pharmacies, insurance)
+- Multi-region and multi-tenant deployment
+- Fraud detection and no-show prediction
+- Advanced analytics and machine learning insights
+
+---
+
+### When and Why These Would Be Added
+
+Future features would be prioritized based on:
+- Clear user demand and measurable value
+- Business and regulatory readiness
+- System stability and operational maturity
+- Availability of data to support advanced functionality
+
+This phased approach ensures that complexity is introduced only when justified by real-world needs.
