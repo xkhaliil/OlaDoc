@@ -5,6 +5,76 @@ This project is a distributed e-healthcare system designed to manage appointment
 The system is built using a **microservices architecture** and supports **multiple frontends (web, mobile, desktop)** communicating through well-defined APIs, following the principles taught in **FE405 – Designing Apps and APIs**.
 
 ---
+## 🧭 Project Overview
+
+### 1.1 Problem Summary
+
+#### What does the system do?
+The system provides a digital platform for managing healthcare appointments, schedules, consultations, and communication between patients, healthcare providers, and healthcare centers.
+
+#### Who are the users?
+- Patients
+- Healthcare Providers
+- Healthcare Centers
+- Platform Administrators
+
+#### What problems does it solve?
+- Manual and inefficient appointment scheduling
+- Lack of centralized patient and provider data
+- Poor communication between patients and providers
+- Limited operational visibility for healthcare centers
+- Difficulty scaling traditional healthcare workflows
+
+---
+
+### 1.2 Core User Flows
+
+1. **Patient books an appointment**
+   - Searches for a provider
+   - Selects an available time slot
+   - Receives confirmation notification
+
+2. **Healthcare provider manages availability**
+   - Updates schedule
+   - Blocks or opens time slots
+
+3. **Provider conducts a consultation**
+   - Accesses appointment details
+   - Reviews patient information
+   - Records consultation notes
+
+4. **Patient receives notifications**
+   - Appointment reminders
+   - Schedule changes
+   - Follow-up messages
+
+5. **Healthcare center manages providers**
+   - Invites providers
+   - Assigns roles
+   - Views aggregated schedules
+
+6. **Administrator manages the platform**
+   - Manages users and roles
+   - Monitors system usage
+
+---
+
+### 1.3 Requirements
+
+#### Functional Requirements
+- Users must authenticate and manage accounts
+- Patients must book and cancel appointments
+- Providers must manage schedules and consultations
+- Notifications must be sent for important events
+- Administrators must manage users and permissions
+
+#### Non-Functional Requirements
+- Scalability to support growth in users and appointments
+- High availability and fault tolerance
+- Low latency for booking and schedule queries
+- Strong security for healthcare data
+- Observability through logging and monitoring
+
 
 ## 1️⃣ Project Elements
 
@@ -84,6 +154,160 @@ Each service is independently deployable and owns its own data.
 - Database per Service  
 - Event-Driven Architecture (partial)  
 - Stateless Services for Horizontal Scaling  
+
+---
+
+## 🧩 API Design Package
+
+### 3.1 API Paradigm Decision
+
+The system uses **REST APIs over HTTPS**.
+
+**Justification**
+- REST is simple, widely adopted, and well-supported by web and mobile clients
+- Resource-based modeling fits the domain (appointments, schedules, users)
+- Avoids the complexity of GraphQL for MVP needs
+
+---
+
+### 3.2 Representative REST Endpoints
+
+The following endpoints represent the core API surface.
+
+#### Authentication
+
+POST /auth/login  
+
+Request:
+```json
+{
+  "email": "user@example.com",
+  "password": "******"
+}
+```
+
+Response:
+```json
+{
+  "accessToken": "jwt-token"
+}
+```
+
+---
+
+#### Appointments
+
+POST /appointments  
+
+Request:
+```json
+{
+  "providerId": "uuid",
+  "datetime": "2025-01-20T10:00"
+}
+```
+
+Response:
+```json
+{
+  "id": "appointment-uuid",
+  "status": "PENDING",
+  "datetime": "2025-01-20T10:00"
+}
+```
+
+GET /appointments/{id}  
+
+Response:
+```json
+{
+  "id": "appointment-uuid",
+  "providerId": "uuid",
+  "patientId": "uuid",
+  "datetime": "2025-01-20T10:00",
+  "status": "CONFIRMED"
+}
+```
+
+PUT /appointments/{id}/cancel  
+
+Response:
+```json
+{
+  "status": "CANCELLED"
+}
+```
+
+---
+
+#### Schedules
+
+GET /providers/{id}/schedule  
+
+Response:
+```json
+{
+  "providerId": "uuid",
+  "availableSlots": [
+    "2025-01-20T10:00",
+    "2025-01-20T11:00"
+  ]
+}
+```
+
+PUT /providers/{id}/schedule  
+
+Request:
+```json
+{
+  "availableSlots": [
+    "2025-01-20T10:00",
+    "2025-01-20T11:00",
+    "2025-01-21T09:00"
+  ]
+}
+```
+
+Response:
+```json
+{
+  "status": "UPDATED"
+}
+```
+
+---
+
+#### Notifications
+
+GET /notifications  
+
+Response:
+```json
+[
+  {
+    "id": "notif-uuid",
+    "type": "APPOINTMENT_REMINDER",
+    "sentAt": "2025-01-19T18:00"
+  }
+]
+```
+
+---
+
+#### Administration
+
+GET /admin/users  
+
+Response:
+```json
+[
+  {
+    "id": "user-uuid",
+    "role": "PROVIDER",
+    "email": "doctor@example.com"
+  }
+]
+```
 
 ---
 
