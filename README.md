@@ -675,6 +675,45 @@ USER -->|1 ── n| NOTIFICATION
 classDef authEntity fill:#E3F2FD,stroke:#1565C0,stroke-width:2px
 classDef coreEntity fill:#FFFDE7,stroke:#F9A825,stroke-width:2px
 ```
+##  Data Model & Storage Decisions
+
+### 4.1 Database Choice & Justification
+
+The system primarily uses **relational databases (PostgreSQL)** for core domain data.
+
+**Why PostgreSQL?**
+- Strong consistency guarantees (ACID)
+- Well-suited for relational data such as users, appointments, and schedules
+- Mature ecosystem and operational stability
+- Supports complex queries required for scheduling and reporting
+
+**Why not alternatives?**
+- MongoDB: less suitable for highly relational data and transactional consistency
+- DynamoDB / NoSQL: unnecessary complexity for MVP requirements
+- MySQL: similar capabilities, but PostgreSQL offers more advanced features
+
+Medical documents are stored in **object storage** to handle large binary files efficiently.
+
+---
+
+### 4.3 Data Access & Patterns
+
+- **Read patterns**
+  - High read frequency for schedules and appointment availability
+  - Optimized for fast lookups and filtering
+
+- **Write patterns**
+  - Writes occur mainly during appointment booking, updates, and cancellations
+  - Writes are less frequent than reads but require strong consistency
+
+- **Caching**
+  - Frequently accessed data (e.g., provider availability) can be cached
+  - Reduces load on primary databases
+
+- **Data synchronization**
+  - Minimal cross-service data duplication
+  - Event-based updates for notifications and analytics
+
 ## 👥 Team Structure & Work Breakdown 
 
 This section explains how the MVP would be built today, how work would be split among teams and developers, and how the team structure would evolve when moving to **Phase I** to deliver a fully releasable product.
